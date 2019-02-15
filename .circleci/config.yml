@@ -1,10 +1,8 @@
 version: 2
 jobs:
   build:
-    # Alpine has issue with tty when doing gpg signing
-    # So we use Debian instead
     docker:
-    - image: maven:3-jdk-8-slim
+    - image: maven:3-jdk-8-alpine
     environment:
       MAVEN_THREAD_COUNT: "1"
       GPG_REAL_NAME: Chen Weiguang
@@ -13,8 +11,7 @@ jobs:
     - run:
         name: Install git and gnupg
         command: |
-          apt-get update
-          apt-get install -y --no-install-recommends \
+          apk add --no-cache \
             git \
             gnupg
     - run:
@@ -27,7 +24,7 @@ jobs:
             Name-Real: ${GPG_REAL_NAME}
             Name-Email: ${GPG_EMAIL}
             Expire-Date: 0
-            Passphrase: ""
+            %no-protection
             %commit
             %echo done
           EOF
@@ -36,7 +33,7 @@ jobs:
     - run:
         name: Install ghr
         command: |
-          curl -LO https://github.com/tcnksm/ghr/releases/download/v0.12.0/ghr_v0.12.0_linux_amd64.tar.gz
+          wget https://github.com/tcnksm/ghr/releases/download/v0.12.0/ghr_v0.12.0_linux_amd64.tar.gz
           tar xvf ghr_v0.12.0_linux_amd64.tar.gz
           mv ghr_v0.12.0_linux_amd64/ghr /usr/local/bin/
     - run:
@@ -46,8 +43,8 @@ jobs:
     - run:
         name: Perform Maven build (and prevent weird GPG problems)
         command: |
-          export GPG_AGENT_INFO=${HOME}/.gnupg/S.gpg-agent:0:1
-          export GPG_TTY=$(tty)
+          echo "allow-loopback-pinentry" > ${HOME}/.gnupg/gpg-agent.conf
+          echo "pinentry-mode loopback" > ${HOME}/.gnupg/gpg.conf
           cd hive
           mvn -T ${MAVEN_THREAD_COUNT} install -Phadoop-2
     - run:
