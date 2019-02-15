@@ -3,8 +3,6 @@ jobs:
   build:
     docker:
     - image: maven:3-jdk-8-alpine
-    branches:
-      only: master
     environment:
       MAVEN_THREAD_COUNT: "1"
       RELEASE_TAG: 1.2.1.spark2-hadoop3
@@ -40,4 +38,7 @@ workflows:
   build_and_publish:
     jobs:
     - build
+        filters:
+          branches:
+            only: master
     
