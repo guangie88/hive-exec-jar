@@ -7,7 +7,6 @@ jobs:
     - image: maven:3-jdk-8-slim
     environment:
       MAVEN_THREAD_COUNT: "1"
-      GNUPGHOME: /tmp/gpg
       GPG_REAL_NAME: Chen Weiguang
       GPG_EMAIL: chen.weiguang@gmail.com
     steps:
