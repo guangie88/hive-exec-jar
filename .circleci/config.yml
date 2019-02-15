@@ -21,7 +21,7 @@ jobs:
     - run:
         name: Create default gpg keypair and expose the public key
         command: |
-          mkdir ${GNUPGHOME}
+          export GNUPGHOME="$(mktemp -d)"
           cat >specs <<EOF
             %echo Generating a default key
             Key-Type: default
@@ -48,6 +48,7 @@ jobs:
     - run:
         name: Perform Maven build (and prevent weird GPG problems)
         command: |
+          export GPG_AGENT_INFO=${HOME}/.gnupg/S.gpg-agent:0:1
           export GPG_TTY=$(tty)
           cd hive
           mvn -T ${MAVEN_THREAD_COUNT} install -Phadoop-2 -Dgpg.passphrase=""
