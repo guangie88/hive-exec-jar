@@ -44,6 +44,9 @@ jobs:
         command: |
           git clone https://github.com/guangie88/hive.git -b release-1.2.1-spark2-allow-hadoop3 --depth 1
     - run:
+        name: Prepare to fend off GPG weird TTY problem
+        command: export GPG_TTY=$(tty)
+    - run:
         name: Perform Maven build
         command: |
           cd hive
