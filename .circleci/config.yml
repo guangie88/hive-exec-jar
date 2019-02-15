@@ -42,5 +42,4 @@ workflows:
           branches:
             only:
             - master
-            - initial
     
