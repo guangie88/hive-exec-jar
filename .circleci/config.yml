@@ -5,13 +5,31 @@ jobs:
     - image: maven:3-jdk-8-alpine
     environment:
       MAVEN_THREAD_COUNT: "1"
-      RELEASE_TAG: 1.2.1.spark2-hadoop3
+      GPG_REAL_NAME: Chen Weiguang
+      GPG_EMAIL: chen.weiguang@gmail.com
     steps:
-    - attach_workspace:
-        at: /opt/artifacts
+    - run:
+        name: Echo branch name
+        command: echo --- ${CIRCLE_BRANCH} ---
     - run:
         name: Install git and gnupg
         command: apk add --no-cache git gnupg
+    - run:
+        name: Create default gpg keypair and expose the public key
+        command: |
+          cat >specs <<EOF
+            %echo Generating a default key
+            Key-Type: default
+            Subkey-Type: default
+            Name-Real: ${GPG_REAL_NAME}
+            Name-Email: ${GPG_EMAIL}
+            Expire-Date: 0
+            Passphrase:
+            %commit
+            %echo done
+            EOF
+          gpg --batch --generate-key specs
+          gpg -a --export "${GPG_REAL_NAME}"
     - run:
         name: Install ghr
         command: |
@@ -28,18 +46,39 @@ jobs:
           cd hive
           mvn -T ${MAVEN_THREAD_COUNT} install -Phadoop-2
     - run:
+        name: Copy target JAR as artifact
+        command: |
+          cp ./ql/target/hive-exec-1.2.1.spark2.jar /tmp/artifacts/
+    - persist_to_workspace:
+        root: /tmp/artifacts
+        paths:
+        - hive-exec-1.2.1.spark2.jar
+    
+  publish:
+    machine: true
+    environment:
+      RELEASE_TAG: 1.2.1.spark2-hadoop3
+    steps:
+    - attach_workspace:
+        at: /tmp/artifacts
+    - run:
         name: Publish target JAR for GitHub release
         command: |
-          cp ./ql/target/hive-exec-1.2.1.spark2.jar /opt/artifacts/
-          ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${RELEASE_TAG} /opt/artifacts/
+          ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${RELEASE_TAG} /tmp/artifacts/
             
 workflows:
   version: 2
-  build_and_publish:
+  build_only:
     jobs:
     - build:
         filters:
           branches:
             only:
-            - master
             - /^(?!pull\/).*$/
+  publish_only:
+    jobs:
+    - publish:
+        filters:
+          branches:
+            only:
+            - master
