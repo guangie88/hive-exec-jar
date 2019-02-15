@@ -1,41 +1,43 @@
 version: 2
 jobs:
   build:
+    docker:
+    - image: maven:3-jdk-8-alpine
     branches:
-      only:
-      - master
-    build-publish-github-release:
-      docker:
-      - image: maven:3-jdk-8-alpine
-      environment:
-        GITHUB_TOKEN:
-        MAVEN_THREAD_COUNT: 1
-        RELEASE_TAG: 1.2.1.spark2-hadoop3
-        
-      steps:
-      - attach_workspace:
-          at: /opt/artifacts
-      - run:
-          name: Install git
-          command: apk add --no-cache git
-      - run:
-          name: Install ghr
-          command: |
-            wget https://github.com/tcnksm/ghr/releases/download/v0.12.0/ghr_v0.12.0_linux_amd64.tar.gz
-            tar xvf ghr_v0.12.0_linux_amd64.tar.gz
-            mv ghr_v0.12.0_linux_amd64/ghr /usr/local/bin/
-      - run:
-          name: Fetch repo with modified Hive for Spark that allows for Hadoop 3.y.z
-          command: |
-            git clone https://github.com/guangie88/hive.git -b release-1.2.1-spark2-allow-hadoop3 --depth 1
-      - run:
-          name: Perform Maven build
-          command: |
-            cd hive
-            mvn -T ${MAVEN_THREAD_COUNT} install -Phadoop-2
-      - run:
-          name: Publish target JAR for GitHub release
-          command: |
-            cp ./ql/target/hive-exec-1.2.1.spark2.jar /opt/artifacts/
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${RELEASE_TAG} /opt/artifacts/
+      only: master
+    environment:
+      MAVEN_THREAD_COUNT: "1"
+      RELEASE_TAG: 1.2.1.spark2-hadoop3
+    steps:
+    - attach_workspace:
+        at: /opt/artifacts
+    - run:
+        name: Install git
+        command: apk add --no-cache git
+    - run:
+        name: Install ghr
+        command: |
+          wget https://github.com/tcnksm/ghr/releases/download/v0.12.0/ghr_v0.12.0_linux_amd64.tar.gz
+          tar xvf ghr_v0.12.0_linux_amd64.tar.gz
+          mv ghr_v0.12.0_linux_amd64/ghr /usr/local/bin/
+    - run:
+        name: Fetch repo with modified Hive for Spark that allows for Hadoop 3.y.z
+        command: |
+          git clone https://github.com/guangie88/hive.git -b release-1.2.1-spark2-allow-hadoop3 --depth 1
+    - run:
+        name: Perform Maven build
+        command: |
+          cd hive
+          mvn -T ${MAVEN_THREAD_COUNT} install -Phadoop-2
+    - run:
+        name: Publish target JAR for GitHub release
+        command: |
+          cp ./ql/target/hive-exec-1.2.1.spark2.jar /opt/artifacts/
+          ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${RELEASE_TAG} /opt/artifacts/
             
+workflows:
+  version: 2
+  build_and_publish:
+    jobs:
+    - build
+    
