@@ -21,6 +21,7 @@ jobs:
     - run:
         name: Create default gpg keypair and expose the public key
         command: |
+          mkdir ${GNUPGHOME}
           cat >specs <<EOF
             %echo Generating a default key
             Key-Type: default
