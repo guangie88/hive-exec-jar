@@ -49,7 +49,7 @@ jobs:
           export GPG_AGENT_INFO=${HOME}/.gnupg/S.gpg-agent:0:1
           export GPG_TTY=$(tty)
           cd hive
-          mvn -T ${MAVEN_THREAD_COUNT} install -Phadoop-2 -Dgpg.passphrase=""
+          mvn -T ${MAVEN_THREAD_COUNT} install -Phadoop-2
     - run:
         name: Copy target JAR as artifact
         command: |
