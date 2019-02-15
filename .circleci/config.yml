@@ -41,7 +41,7 @@ jobs:
         name: Perform Maven build
         command: |
           cd hive
-          mvn -T ${MAVEN_THREAD_COUNT} install -Phadoop-2
+          mvn -T ${MAVEN_THREAD_COUNT} install -Phadoop-2 -Dgpg.passphrase=""
     - run:
         name: Copy target JAR as artifact
         command: |
