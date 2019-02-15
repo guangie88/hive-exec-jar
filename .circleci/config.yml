@@ -43,12 +43,13 @@ jobs:
         name: Fetch repo with modified Hive for Spark that allows for Hadoop 3.y.z
         command: |
           git clone https://github.com/guangie88/hive.git -b release-1.2.1-spark2-allow-hadoop3 --depth 1
-    - run:
-        name: Prepare to fend off GPG weird TTY problem
-        command: export GPG_TTY=$(tty)
+    # - run:
+    #     name: Prepare to fend off GPG weird TTY problem
+    #     command: 
     - run:
         name: Perform Maven build
         command: |
+          export GPG_TTY=$(tty)
           cd hive
           mvn -T ${MAVEN_THREAD_COUNT} install -Phadoop-2 -Dgpg.passphrase=""
     - run:
