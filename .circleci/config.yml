@@ -1,8 +1,10 @@
 version: 2
 jobs:
   build:
+    # Alpine has issue with tty when doing gpg signing
+    # So we use Debian instead
     docker:
-    - image: maven:3-jdk-8-alpine
+    - image: maven:3-jdk-8-slim
     environment:
       MAVEN_THREAD_COUNT: "1"
       GPG_REAL_NAME: Chen Weiguang
@@ -10,7 +12,11 @@ jobs:
     steps:
     - run:
         name: Install git and gnupg
-        command: apk add --no-cache git gnupg
+        command: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            git \
+            gnupg
     - run:
         name: Create default gpg keypair and expose the public key
         command: |
@@ -30,7 +36,7 @@ jobs:
     - run:
         name: Install ghr
         command: |
-          wget https://github.com/tcnksm/ghr/releases/download/v0.12.0/ghr_v0.12.0_linux_amd64.tar.gz
+          curl -LO https://github.com/tcnksm/ghr/releases/download/v0.12.0/ghr_v0.12.0_linux_amd64.tar.gz
           tar xvf ghr_v0.12.0_linux_amd64.tar.gz
           mv ghr_v0.12.0_linux_amd64/ghr /usr/local/bin/
     - run:
