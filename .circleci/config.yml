@@ -10,8 +10,8 @@ jobs:
     - attach_workspace:
         at: /opt/artifacts
     - run:
-        name: Install git
-        command: apk add --no-cache git
+        name: Install git and gnupg
+        command: apk add --no-cache git gnupg
     - run:
         name: Install ghr
         command: |
