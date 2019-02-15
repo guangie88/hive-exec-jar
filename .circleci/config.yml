@@ -9,9 +9,6 @@ jobs:
       GPG_EMAIL: chen.weiguang@gmail.com
     steps:
     - run:
-        name: Echo branch name
-        command: echo --- ${CIRCLE_BRANCH} ---
-    - run:
         name: Install git and gnupg
         command: apk add --no-cache git gnupg
     - run:
@@ -24,10 +21,10 @@ jobs:
             Name-Real: ${GPG_REAL_NAME}
             Name-Email: ${GPG_EMAIL}
             Expire-Date: 0
-            Passphrase:
+            Passphrase: ""
             %commit
             %echo done
-            EOF
+          EOF
           gpg --batch --generate-key specs
           gpg -a --export "${GPG_REAL_NAME}"
     - run:
