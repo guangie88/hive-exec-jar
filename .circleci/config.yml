@@ -42,4 +42,4 @@ workflows:
           branches:
             only:
             - master
-    
+            - /^(?!pull\/).*$/
