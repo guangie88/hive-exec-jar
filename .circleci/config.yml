@@ -40,7 +40,7 @@ jobs:
           echo "allow-loopback-pinentry" > ${HOME}/.gnupg/gpg-agent.conf
           echo "pinentry-mode loopback" > ${HOME}/.gnupg/gpg.conf
           cd hive
-          mvn -T ${MAVEN_THREAD_COUNT} install -Phadoop-2
+          mvn -T ${MAVEN_THREAD_COUNT} install -Phadoop-2 -DskipTests
     - run:
         name: Copy target JAR as artifact
         command: |
