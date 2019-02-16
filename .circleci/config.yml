@@ -20,10 +20,11 @@ jobs:
     - run:
         name: Get additional values for checking cache
         command: |
-          UNAME_HASH=$(uname -a | sha256sum | cut -d' ' -f1)
-          GPG_NAME_EMAIL_HASH=$(echo ${GPG_REAL_NAME}-${GPG_EMAIL} | sha256sum | cut -d' ' -f1)
-          HIVE_REPO_SHA=$(git ls-remote --refs -q ${HIVE_REPO_URL} ${HIVE_REPO_REF} | cut -f1)
-          echo -e "${UNAME_HASH}-${GPG_NAME_EMAIL_HASH}-${HIVE_REPO_SHA}" > /tmp/cache-hash
+          MAVEN_HASH=$(mvn --version | md5sum | cut -d' ' -f1)
+          JAVA_HASH=$(java -version 2>&1 | md5sum | cut -d' ' -f1)
+          GPG_NAME_EMAIL_HASH=$(echo ${GPG_REAL_NAME}-${GPG_EMAIL} | md5sum | cut -d' ' -f1)
+          HIVE_REPO_HASH=$(git ls-remote --refs -q ${HIVE_REPO_URL} ${HIVE_REPO_REF} | cut -f1)
+          echo -e "${MAVEN_HASH}-${JAVA_HASH}-${GPG_NAME_EMAIL_HASH}-${HIVE_REPO_HASH}" > /tmp/cache-hash
           cat /tmp/cache-hash
 
     - restore_cache:
