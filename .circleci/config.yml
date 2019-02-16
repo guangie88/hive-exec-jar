@@ -82,7 +82,8 @@ jobs:
         name: Publish target JAR for GitHub release
         command: |
           ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${RELEASE_TAG} /tmp/artifacts/
-            
+
+# This assumes that "Only build pull requests" feature is turned on for the project
 workflows:
   version: 2
   build_only:
@@ -91,7 +92,7 @@ workflows:
         filters:
           branches:
             only:
-            - /^pull\/.*$/
+            - master
   publish_only:
     jobs:
     - publish:
