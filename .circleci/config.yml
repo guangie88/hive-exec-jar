@@ -45,7 +45,7 @@ jobs:
     - run:
         name: Copy target JAR as artifact
         command: |
-          cp ./ql/target/hive-exec-1.2.1.spark2.jar /tmp/artifacts/
+          cp ./hive/ql/target/hive-exec-1.2.1.spark2.jar /tmp/artifacts/
     - persist_to_workspace:
         root: /tmp/artifacts
         paths:
