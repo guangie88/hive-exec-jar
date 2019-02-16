@@ -8,7 +8,8 @@ jobs:
       MAVEN_THREAD_COUNT: "1"
       GPG_REAL_NAME: Chen Weiguang
       GPG_EMAIL: chen.weiguang@gmail.com
-      RELEASE_TAG: 1.2.1.spark2-hadoop3
+      HIVE_REPO_URL: https://github.com/guangie88/hive.git
+      HIVE_REPO_REF: release-1.2.1-spark2-allow-hadoop3
     steps:
     - run:
         name: Install git and gnupg
@@ -17,40 +18,59 @@ jobs:
             git \
             gnupg
     - run:
-        name: Create default gpg keypair and expose the public key
+        name: Get additional values for checking cache
         command: |
-          cat >specs <<EOF
-            %echo Generating a default key
-            Key-Type: default
-            Subkey-Type: default
-            Name-Real: ${GPG_REAL_NAME}
-            Name-Email: ${GPG_EMAIL}
-            Expire-Date: 0
-            %no-protection
-            %commit
-            %echo done
+          MAVEN_HASH=$(mvn --version | md5sum | cut -d' ' -f1)
+          JAVA_HASH=$(java -version 2>&1 | md5sum | cut -d' ' -f1)
+          GPG_NAME_EMAIL_HASH=$(echo ${GPG_REAL_NAME}-${GPG_EMAIL} | md5sum | cut -d' ' -f1)
+          HIVE_REPO_HASH=$(git ls-remote --refs -q ${HIVE_REPO_URL} ${HIVE_REPO_REF} | cut -f1)
+          echo -e "${MAVEN_HASH}-${JAVA_HASH}-${GPG_NAME_EMAIL_HASH}-${HIVE_REPO_HASH}" > /tmp/cache-hash
+          cat /tmp/cache-hash
+
+    - restore_cache:
+        keys:
+        - v1-hive-exec-{{ checksum "/tmp/cache-hash" }}
+    - run:
+        name: Create artifacts directory
+        command: mkdir -p /tmp/artifacts
+    - run:
+        name: Create default gpg keypair and expose the public key as artifact
+        command: |
+          if [ ! -f /tmp/artifacts/gpg-pub.pem ]; then
+            cat >specs <<EOF
+              %echo Generating a default key
+              Key-Type: default
+              Subkey-Type: default
+              Name-Real: ${GPG_REAL_NAME}
+              Name-Email: ${GPG_EMAIL}
+              Expire-Date: 0
+              %no-protection
+              %commit
+              %echo done
           EOF
-          gpg --batch --generate-key specs
-          gpg -a --export "${GPG_REAL_NAME}"
+            gpg --batch --generate-key specs
+            gpg -a --export "${GPG_REAL_NAME}" > /tmp/artifacts/gpg-pub.pem
+          fi
     - run:
-        name: Fetch repo with modified Hive for Spark that allows for Hadoop 3.y.z
+        name: Generate target JAR artifact via Maven build on modified Hive for Spark that allows for Hadoop 3
         command: |
-          git clone https://github.com/guangie88/hive.git -b release-1.2.1-spark2-allow-hadoop3 --depth 1
-    - run:
-        name: Perform Maven build (and prevent weird GPG problems)
-        command: |
-          echo "allow-loopback-pinentry" > ${HOME}/.gnupg/gpg-agent.conf
-          echo "pinentry-mode loopback" > ${HOME}/.gnupg/gpg.conf
-          cd hive
-          mvn -T ${MAVEN_THREAD_COUNT} install -Phadoop-2 -DskipTests
-    - run:
-        name: Copy target JAR as artifact
-        command: |
-          mkdir -p /tmp/artifacts
-          cp ./hive/ql/target/hive-exec-1.2.1.spark2.jar /tmp/artifacts/
+          if [ ! -f /tmp/artifacts/hive-exec-1.2.1.spark2.jar ]; then
+            git clone ${HIVE_REPO_URL} -b ${HIVE_REPO_REF} --depth 1
+            echo "allow-loopback-pinentry" > ${HOME}/.gnupg/gpg-agent.conf
+            echo "pinentry-mode loopback" > ${HOME}/.gnupg/gpg.conf
+            cd hive
+            mvn -T ${MAVEN_THREAD_COUNT} install -Phadoop-2 -DskipTests
+            cp ./hive/ql/target/hive-exec-1.2.1.spark2.jar /tmp/artifacts/
+          fi
+    - save_cache:
+        key: v1-hive-exec-{{ checksum "/tmp/cache-hash" }}
+        paths:
+        - /tmp/artifacts
+
     - persist_to_workspace:
         root: /tmp/artifacts
         paths:
+        - gpg-pub.pem
         - hive-exec-1.2.1.spark2.jar
     
   publish:
