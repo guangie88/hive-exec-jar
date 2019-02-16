@@ -8,6 +8,7 @@ jobs:
       MAVEN_THREAD_COUNT: "1"
       GPG_REAL_NAME: Chen Weiguang
       GPG_EMAIL: chen.weiguang@gmail.com
+      RELEASE_TAG: 1.2.1.spark2-hadoop3
     steps:
     - run:
         name: Install git and gnupg
@@ -51,6 +52,18 @@ jobs:
         root: /tmp/artifacts
         paths:
         - hive-exec-1.2.1.spark2.jar
+    - attach_workspace:
+        at: /tmp/artifacts
+    - run:
+        name: Install ghr
+        command: |
+          wget https://github.com/tcnksm/ghr/releases/download/v0.12.0/ghr_v0.12.0_linux_amd64.tar.gz
+          tar xvf ghr_v0.12.0_linux_amd64.tar.gz
+          sudo mv ghr_v0.12.0_linux_amd64/ghr /usr/local/bin/
+    - run:
+        name: Publish target JAR for GitHub release
+        command: |
+          ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${RELEASE_TAG} /tmp/artifacts/
     
   publish:
     machine: true
@@ -64,7 +77,7 @@ jobs:
         command: |
           wget https://github.com/tcnksm/ghr/releases/download/v0.12.0/ghr_v0.12.0_linux_amd64.tar.gz
           tar xvf ghr_v0.12.0_linux_amd64.tar.gz
-          mv ghr_v0.12.0_linux_amd64/ghr /usr/local/bin/
+          sudo mv ghr_v0.12.0_linux_amd64/ghr /usr/local/bin/
     - run:
         name: Publish target JAR for GitHub release
         command: |
@@ -78,7 +91,7 @@ workflows:
         filters:
           branches:
             only:
-            - /^(?!pull\/).*$/
+            - /^pull\/.*$/
   publish_only:
     jobs:
     - publish:
