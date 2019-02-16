@@ -54,8 +54,6 @@ jobs:
         - hive-exec-1.2.1.spark2.jar
     
   publish:
-    requires:
-    - build
     docker:
     - image: apihackers/ghr:0.10.2
     environment:
@@ -81,6 +79,8 @@ workflows:
   publish_only:
     jobs:
     - publish:
+        requires:
+          - build
         filters:
           branches:
             # only:
