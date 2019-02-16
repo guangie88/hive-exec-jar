@@ -20,10 +20,11 @@ jobs:
     - run:
         name: Get additional values for checking cache
         command: |
-          echo "export UNAME_HASH=$(uname -a | md5sum | cut -d' ' -f1)" >> $BASH_ENV
-          echo "export GPG_NAME_EMAIL_HASH=$(echo ${GPG_REAL_NAME}-${GPG_EMAIL} | md5sum | cut -d' ' -f1)" >> $BASH_ENV
-          echo "export HIVE_REPO_SHA=$(git ls-remote --refs -q ${HIVE_REPO_URL} ${HIVE_REPO_REF} | cut -f1)" >> $BASH_ENV
-          echo -e "${UNAME_HASH}\n${GPG_NAME_EMAIL_HASH}\n${HIVE_REPO_SHA}" > /tmp/cache-hashes
+          UNAME_HASH=$(uname -a | md5sum | cut -d' ' -f1)
+          GPG_NAME_EMAIL_HASH=$(echo ${GPG_REAL_NAME}-${GPG_EMAIL} | md5sum | cut -d' ' -f1)
+          HIVE_REPO_SHA=$(git ls-remote --refs -q ${HIVE_REPO_URL} ${HIVE_REPO_REF} | cut -f1)
+          echo -e "${UNAME_HASH}-${GPG_NAME_EMAIL_HASH}-${HIVE_REPO_SHA}" > /tmp/cache-hashes
+          cat /tmp/cache-hashes
 
     - restore_cache:
         keys:
