@@ -57,14 +57,15 @@ jobs:
         command: |
           mkdir -p /tmp/artifacts
           cp ./hive/ql/target/hive-exec-1.2.1.spark2.jar /tmp/artifacts/
-    - persist_to_workspace:
-        root: /tmp/artifacts
-        paths:
-        - hive-exec-1.2.1.spark2.jar
     - save_cache:
         key: v1-hive-exec-{{ .Environment.UNAME_HASH }}-{{ .Environment.GPG_REAL_NAME }}-{{ .Environment.GPG_EMAIL }}-{{ .Environment.HIVE_REPO_SHA }}
         paths:
         - /tmp/artifacts
+
+    - persist_to_workspace:
+        root: /tmp/artifacts
+        paths:
+        - hive-exec-1.2.1.spark2.jar
     
   publish:
     docker:
