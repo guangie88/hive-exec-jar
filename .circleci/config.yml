@@ -26,7 +26,8 @@ jobs:
           echo -e "${UNAME_HASH}\n${GPG_NAME_EMAIL_HASH}\n${HIVE_REPO_SHA}" > /tmp/cache-hashes
 
     - restore_cache:
-        keys: v1-hive-exec-{{ checksum "/tmp/cache-hashes" }}
+        keys:
+        - v1-hive-exec-{{ checksum "/tmp/cache-hashes" }}
     - run:
         name: Create default gpg keypair and expose the public key
         command: |
@@ -60,7 +61,7 @@ jobs:
           mkdir -p /tmp/artifacts
           cp ./hive/ql/target/hive-exec-1.2.1.spark2.jar /tmp/artifacts/
     - save_cache:
-        keys: v1-hive-exec-{{ checksum "/tmp/cache-hashes" }}
+        key: v1-hive-exec-{{ checksum "/tmp/cache-hashes" }}
         paths:
         - /tmp/artifacts
 
