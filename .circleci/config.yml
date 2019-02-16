@@ -16,6 +16,9 @@ jobs:
         command: |
           echo "export HIVE_REPO_SHA=$(git ls-remote --refs -q ${HIVE_REPO_URL} ${HIVE_REPO_REF} | cut -f1)" >> $BASH_ENV
           echo "export UNAME_HASH=$(uname -a | md5sum | cut -d' ' -f1)" >> $BASH_ENV
+    - run:
+        name: Print cache key
+        command: echo v1-hive-exec-${UNAME_HASH}-${GPG_REAL_NAME}-${GPG_EMAIL}-${HIVE_REPO_SHA}
 
     - restore_cache:
         keys: v1-hive-exec-{{ .Environment.UNAME_HASH }}-{{ .Environment.GPG_REAL_NAME }}-{{ .Environment.GPG_EMAIL }}-{{ .Environment.HIVE_REPO_SHA }}
