@@ -8,8 +8,17 @@ jobs:
       MAVEN_THREAD_COUNT: "1"
       GPG_REAL_NAME: Chen Weiguang
       GPG_EMAIL: chen.weiguang@gmail.com
-      RELEASE_TAG: 1.2.1.spark2-hadoop3
+      HIVE_REPO_URL: https://github.com/guangie88/hive.git
+      HIVE_REPO_REF: release-1.2.1-spark2-allow-hadoop3
     steps:
+    - run:
+        name: Get additional values for checking cache
+        command: |
+          echo "export HIVE_REPO_SHA=$(git ls-remote --refs -q ${HIVE_REPO_URL} ${HIVE_REPO_REF} | cut -f1)" >> $BASH_ENV
+          echo "export UNAME_HASH=$(uname -a | md5sum | cut -d' ' -f1)" >> $BASH_ENV
+
+    - restore_cache:
+        keys: v1-hive-exec-{{ .Environment.UNAME_HASH }}-{{ .Environment.GPG_REAL_NAME }}-{{ .Environment.GPG_EMAIL }}-{{ .Environment.HIVE_REPO_SHA }}
     - run:
         name: Install git and gnupg
         command: |
@@ -35,7 +44,7 @@ jobs:
     - run:
         name: Fetch repo with modified Hive for Spark that allows for Hadoop 3.y.z
         command: |
-          git clone https://github.com/guangie88/hive.git -b release-1.2.1-spark2-allow-hadoop3 --depth 1
+          git clone ${HIVE_REPO_URL} -b ${HIVE_REPO_REF} --depth 1
     - run:
         name: Perform Maven build (and prevent weird GPG problems)
         command: |
@@ -52,6 +61,10 @@ jobs:
         root: /tmp/artifacts
         paths:
         - hive-exec-1.2.1.spark2.jar
+    - save_cache:
+        key: v1-hive-exec-{{ .Environment.UNAME_HASH }}-{{ .Environment.GPG_REAL_NAME }}-{{ .Environment.GPG_EMAIL }}-{{ .Environment.HIVE_REPO_SHA }}
+        paths:
+        - /tmp/artifacts
     
   publish:
     docker:
