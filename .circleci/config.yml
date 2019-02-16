@@ -4,6 +4,7 @@ jobs:
     docker:
     - image: maven:3-jdk-8-alpine
     environment:
+      MAVEN_OPTS: "-Xmx2g"
       MAVEN_THREAD_COUNT: "1"
       GPG_REAL_NAME: Chen Weiguang
       GPG_EMAIL: chen.weiguang@gmail.com
