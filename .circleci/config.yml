@@ -59,7 +59,7 @@ jobs:
         command: |
           wget https://github.com/tcnksm/ghr/releases/download/v0.12.0/ghr_v0.12.0_linux_amd64.tar.gz
           tar xvf ghr_v0.12.0_linux_amd64.tar.gz
-          sudo mv ghr_v0.12.0_linux_amd64/ghr /usr/local/bin/
+          mv ghr_v0.12.0_linux_amd64/ghr /usr/local/bin/
     - run:
         name: Publish target JAR for GitHub release
         command: |
