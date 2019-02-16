@@ -80,15 +80,9 @@ workflows:
             - master
   publish_only:
     jobs:
-    - build:
-        filters:
-          branches:
-            ignore:
-            - master
-  publish_only:
-    jobs:
     - publish:
         filters:
           branches:
-            only:
+            # only:
+            ignore:
             - master
