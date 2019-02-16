@@ -47,7 +47,7 @@ jobs:
               %no-protection
               %commit
               %echo done
-            EOF
+          EOF
             gpg --batch --generate-key specs
             gpg -a --export "${GPG_REAL_NAME}" > /tmp/artifacts/gpg-pub.pem
           fi
